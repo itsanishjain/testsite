@@ -13,6 +13,7 @@
     "elysia": "^1.1.7"
   },
   "scripts": {
-    "start": "bun run app.ts"
+    "start": "bun run app.ts",
+    "build": "bun run build"
   }
 }

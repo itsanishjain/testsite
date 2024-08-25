@@ -1,5 +1,5 @@
 zerops:
-  - setup: nodejs0
+  - setup: nodejs1
     # ==== how to build your application ====
     build:
       # what technologies should the build
