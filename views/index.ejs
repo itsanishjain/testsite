@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Time Visualizer</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <h1>Meeting Time Visualizer</h1>
+    <form id="availability-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+        
+        <label for="timezone">Timezone:</label>
+        <select id="timezone" required>
+            <!-- We'll populate this with JavaScript -->
+        </select>
+        
+        <label for="start-time">Start Time:</label>
+        <input type="time" id="start-time" required>
+        
+        <label for="end-time">End Time:</label>
+        <input type="time" id="end-time" required>
+        
+        <button type="submit">Submit Availability</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.33/moment-timezone-with-data.min.js"></script>
+    <script src="/script.js"></script>
+</body>
+</html>

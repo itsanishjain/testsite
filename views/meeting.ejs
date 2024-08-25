@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Availability</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.33/moment-timezone-with-data.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.1.1/dist/chartjs-chart-matrix.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.33/moment-timezone-with-data.min.js"></script>
+
+
+</head>
+<body>
+    <h1>Meeting Availability</h1>
+    <div id="venn-diagram"></div>
+    <div id="participants-list">
+        <h2>Participants</h2>
+        <ul>
+            <% participants.forEach(function(participant) { %>
+                <li><%= participant.name %> (<%= participant.timezone %>): <%= participant.start_time %> - <%= participant.end_time %></li>
+            <% }); %>
+        </ul>
+    </div>
+
+    <!-- Add this right after the <h1> tag in views/meeting.ejs -->
+<div id="share-link">
+    <p>Share this link with others to add their availability:</p>
+    <input type="text" readonly value="<%= `${process.env.BASE_URL || 'http://localhost:3000'}/join/${meetingId}` %>" id="share-url">
+    <button onclick="copyShareLink()">Copy Link</button>
+</div>
+
+
+<h1>Meeting Availability</h1>
+<canvas id="timeline-canvas"></canvas>
+<div id="participants-list">
+    <h2>Participants</h2>
+    <ul>
+        <% participants.forEach(function(participant) { %>
+            <li><%= participant.name %> (<%= participant.timezone %>): <%= participant.start_time %> - <%= participant.end_time %></li>
+        <% }); %>
+    </ul>
+</div>
+
+
+<h1>Meeting Availability</h1>
+<div style="width: 100%; height: 400px;">
+    <canvas id="timeline-chart"></canvas>
+</div>
+<div id="participants-list">
+    <h2>Participants</h2>
+    <ul id="participant-colors">
+        <!-- We'll populate this list dynamically -->
+    </ul>
+</div>
+
+
+
+
+
+
+<h1>Meeting Availability Heatmap</h1>
+<div id="best-time"></div>
+<div id="local-time"></div>
+<div style="width: 100%; height: 400px;">
+    <canvas id="availability-heatmap"></canvas>
+</div>
+<div id="participants-list">
+    <h2>Participants</h2>
+    <ul id="participant-colors">
+        <!-- We'll populate this list dynamically -->
+    </ul>
+</div>
+
+   <script>
+        const participants = <%- JSON.stringify(participants) %>;
+        
+        // Convert times to minutes since midnight
+        function timeToMinutes(time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        // Prepare data for Venn diagram
+        const sets = participants.map(p => ({
+            name: p.name,
+            startTime: timeToMinutes(p.start_time),
+            endTime: timeToMinutes(p.end_time)
+        }));
+
+        // Find overlapping time
+        const overlapStart = Math.max(...sets.map(s => s.startTime));
+        const overlapEnd = Math.min(...sets.map(s => s.endTime));
+
+        // Create SVG
+        const width = 600;
+        const height = 400;
+        const svg = d3.select("#venn-diagram")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Draw circles
+        const colors = d3.schemeCategory10;
+        sets.forEach((set, i) => {
+            svg.append("circle")
+                .attr("cx", width / 2)
+                .attr("cy", height / 2)
+                .attr("r", (set.endTime - set.startTime) / 2)
+                .attr("fill", colors[i])
+                .attr("fill-opacity", 0.5)
+                .attr("stroke", colors[i])
+                .attr("stroke-width", 2);
+        });
+
+        // Draw overlap
+        if (overlapEnd > overlapStart) {
+            svg.append("circle")
+                .attr("cx", width / 2)
+                .attr("cy", height / 2)
+                .attr("r", (overlapEnd - overlapStart) / 2)
+                .attr("fill", "yellow")
+                .attr("fill-opacity", 0.5)
+                .attr("stroke", "black")
+                .attr("stroke-width", 2);
+
+            svg.append("text")
+                .attr("x", width / 2)
+                .attr("y", height / 2)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "central")
+                .text(`Overlap: ${Math.floor(overlapStart / 60)}:${overlapStart % 60} - ${Math.floor(overlapEnd / 60)}:${overlapEnd % 60}`);
+        }
+    </script>
+
+
+   <script>
+   document.addEventListener('DOMContentLoaded', () => {
+    const participants = <%- JSON.stringify(participants) %>;
+    const canvas = document.getElementById('timeline-canvas');
+    const ctx = canvas.getContext('2d');
+
+    const canvasWidth = 1000;
+    const canvasHeight = 50 + participants.length * 40;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    // Draw timeline
+    ctx.fillStyle = 'black';
+    ctx.fillRect(50, 25, canvasWidth - 100, 2);
+    for (let i = 0; i <= 24; i++) {
+        ctx.fillRect(50 + (i * (canvasWidth - 100) / 24), 20, 2, 12);
+        ctx.fillText(i.toString().padStart(2, '0') + ':00', 45 + (i * (canvasWidth - 100) / 24), 15);
+    }
+
+    // Draw participant availabilities
+    participants.forEach((participant, index) => {
+        const yPosition = 50 + index * 40;
+        
+        // Convert times to minutes since midnight UTC
+        const startMinutes = convertToUTCMinutes(participant.start_time, participant.timezone);
+        const endMinutes = convertToUTCMinutes(participant.end_time, participant.timezone);
+        
+        const startX = 50 + (startMinutes * (canvasWidth - 100) / 1440);
+        const width = ((endMinutes - startMinutes) * (canvasWidth - 100) / 1440);
+        
+        ctx.fillStyle = `hsl(${index * 360 / participants.length}, 70%, 70%)`;
+        ctx.fillRect(startX, yPosition, width, 30);
+        
+        ctx.fillStyle = 'black';
+        ctx.fillText(`${participant.name} (${participant.timezone})`, 10, yPosition + 20);
+    });
+
+    // Find and highlight overlap
+    const overlapStart = Math.max(...participants.map(p => convertToUTCMinutes(p.start_time, p.timezone)));
+    const overlapEnd = Math.min(...participants.map(p => convertToUTCMinutes(p.end_time, p.timezone)));
+    
+    if (overlapEnd > overlapStart) {
+        const overlapStartX = 50 + (overlapStart * (canvasWidth - 100) / 1440);
+        const overlapWidth = ((overlapEnd - overlapStart) * (canvasWidth - 100) / 1440);
+        
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+        ctx.fillRect(overlapStartX, 30, overlapWidth, canvasHeight - 40);
+        
+        ctx.fillStyle = 'green';
+        ctx.fillText(`Overlap: ${formatMinutes(overlapStart)} - ${formatMinutes(overlapEnd)} UTC`, overlapStartX, canvasHeight - 10);
+    }
+});
+
+function convertToUTCMinutes(time, timezone) {
+    return moment.tz(`2023-01-01 ${time}`, timezone).utc().diff(moment.utc('2023-01-01'), 'minutes');
+}
+
+function formatMinutes(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+   </script>
+
+   <script>
+   document.addEventListener('DOMContentLoaded', () => {
+    const participants = <%- JSON.stringify(participants) %>;
+    const ctx = document.getElementById('timeline-chart').getContext('2d');
+    const participantsList = document.getElementById('participant-colors');
+
+    // Generate color palette
+    const colorPalette = generateColorPalette(participants.length);
+
+    // Prepare data for Chart.js
+    const datasets = participants.map((participant, index) => {
+        const startMinutes = convertToUTCMinutes(participant.start_time, participant.timezone);
+        const endMinutes = convertToUTCMinutes(participant.end_time, participant.timezone);
+        
+        // Add participant to the list with color
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `<span style="color: ${colorPalette[index]}">●</span> ${participant.name} (${participant.timezone}): ${participant.start_time} - ${participant.end_time}`;
+        participantsList.appendChild(listItem);
+
+        return {
+            label: participant.name,
+            data: [{
+                x: [startMinutes, endMinutes],
+                y: participant.name
+            }],
+            backgroundColor: colorPalette[index],
+            borderColor: colorPalette[index],
+            borderWidth: 1
+        };
+    });
+
+    // Find overlap
+    const overlapStart = Math.max(...participants.map(p => convertToUTCMinutes(p.start_time, p.timezone)));
+    const overlapEnd = Math.min(...participants.map(p => convertToUTCMinutes(p.end_time, p.timezone)));
+
+    // Add overlap dataset if there is an overlap
+    if (overlapEnd > overlapStart) {
+        datasets.push({
+            label: 'Overlap',
+            data: [{
+                x: [overlapStart, overlapEnd],
+                y: 'Overlap'
+            }],
+            backgroundColor: 'rgba(0, 255, 0, 0.3)',
+            borderColor: 'green',
+            borderWidth: 1
+        });
+    }
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: { datasets },
+        options: {
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'top',
+                    min: 0,
+                    max: 1440,
+                    ticks: {
+                        stepSize: 60,
+                        callback: value => formatMinutes(value)
+                    },
+                    title: {
+                        display: true,
+                        text: 'Time (UTC)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Participants'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            const startTime = formatMinutes(context.raw.x[0]);
+                            const endTime = formatMinutes(context.raw.x[1]);
+                            return `${context.dataset.label}: ${startTime} - ${endTime} UTC`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+function convertToUTCMinutes(time, timezone) {
+    return moment.tz(`2023-01-01 ${time}`, timezone).utc().diff(moment.utc('2023-01-01'), 'minutes');
+}
+
+function formatMinutes(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+function generateColorPalette(count) {
+    const palette = [];
+    for (let i = 0; i < count; i++) {
+        const hue = (i * 360 / count) % 360;
+        palette.push(`hsl(${hue}, 70%, 50%)`);
+    }
+    return palette;
+}
+</script>
+
+    <!-- Add this script at the end of the file -->
+<script>
+function copyShareLink() {
+    const shareUrl = document.getElementById('share-url');
+    shareUrl.select();
+    document.execCommand('copy');
+    alert('Link copied to clipboard!');
+}
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const participants = <%- JSON.stringify(participants) %>;
+    const ctx = document.getElementById('availability-heatmap').getContext('2d');
+    const participantsList = document.getElementById('participant-colors');
+    const bestTimeDiv = document.getElementById('best-time');
+    const localTimeDiv = document.getElementById('local-time');
+
+    // Prepare data for heatmap
+    const timeSlots = new Array(24 * 4).fill(0); // 15-minute intervals
+
+    participants.forEach((participant, index) => {
+        const startMinutes = convertToUTCMinutes(participant.start_time, participant.timezone);
+        const endMinutes = convertToUTCMinutes(participant.end_time, participant.timezone);
+
+        // Add participant to the list
+        const listItem = document.createElement('li');
+        listItem.textContent = `${participant.name} (${participant.timezone}): ${participant.start_time} - ${participant.end_time}`;
+        participantsList.appendChild(listItem);
+
+        // Fill heatmap data
+        for (let i = Math.floor(startMinutes / 15); i < Math.ceil(endMinutes / 15); i++) {
+            if (i >= 0 && i < timeSlots.length) {
+                timeSlots[i]++;
+            }
+        }
+    });
+
+    // Find best meeting time
+    const maxOverlap = Math.max(...timeSlots);
+    const bestStartIndex = timeSlots.indexOf(maxOverlap);
+    const bestEndIndex = timeSlots.lastIndexOf(maxOverlap);
+    const bestStartTime = moment.utc().startOf('day').add(bestStartIndex * 15, 'minutes');
+    const bestEndTime = moment.utc().startOf('day').add((bestEndIndex + 1) * 15, 'minutes');
+
+    bestTimeDiv.innerHTML = `<strong>Best Meeting Time:</strong> ${bestStartTime.local().format('LT')} - ${bestEndTime.local().format('LT')} (${maxOverlap} participants)`;
+    localTimeDiv.textContent = `Times shown in your local timezone: ${moment.tz.guess()}`;
+
+    // Prepare data for Chart.js
+    const data = timeSlots.map((value, index) => ({
+        x: index * 15,
+        y: value
+    }));
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            datasets: [{
+                label: 'Participant Overlap',
+                data: data,
+                backgroundColor: (context) => {
+                    const value = context.raw.y;
+                    const alpha = value / participants.length;
+                    return `rgba(0, 128, 0, ${alpha})`;
+                },
+                barPercentage: 1,
+                categoryPercentage: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        title: (context) => {
+                            const time = moment.utc().startOf('day').add(context[0].parsed.x, 'minutes');
+                            return `${time.local().format('LT')} - ${time.add(15, 'minutes').local().format('LT')}`;
+                        },
+                        label: (context) => `${context.parsed.y} participant(s) available`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    min: 0,
+                    max: 24 * 60,
+                    ticks: {
+                        callback: (value) => {
+                            const time = moment.utc().startOf('day').add(value, 'minutes');
+                            return time.local().format('HH:mm');
+                        },
+                        stepSize: 60
+                    },
+                    title: {
+                        display: true,
+                        text: 'Time (Local)'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: participants.length,
+                    title: {
+                        display: true,
+                        text: 'Number of Participants'
+                    }
+                }
+            }
+        }
+    });
+});
+
+function convertToUTCMinutes(time, timezone) {
+    return moment.tz(`2023-01-01 ${time}`, timezone).utc().diff(moment.utc('2023-01-01'), 'minutes');
+}
+</script>
+
+
+
+</body>
+</html>
