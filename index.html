@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Technology Performance Comparison</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+      <h1 class="text-3xl font-bold mb-4">
+        Web Technology Performance Comparison
+      </h1>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Express.js + SQLite</h2>
+          <iframe
+            src="http://localhost:3001"
+            class="w-full h-64 border-0"
+          ></iframe>
+          <div class="mt-2">
+            <p>Read speed: <span id="express-sqlite-read">0</span>/sec</p>
+            <p>Write speed: <span id="express-sqlite-write">0</span>/sec</p>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Elysia.js + SQLite</h2>
+          <iframe
+            src="http://localhost:3002"
+            class="w-full h-64 border-0"
+          ></iframe>
+          <div class="mt-2">
+            <p>Read speed: <span id="elysia-sqlite-read">0</span>/sec</p>
+            <p>Write speed: <span id="elysia-sqlite-write">0</span>/sec</p>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Express.js + Turso</h2>
+          <iframe
+            src="http://localhost:3003"
+            class="w-full h-64 border-0"
+          ></iframe>
+          <div class="mt-2">
+            <p>Read speed: <span id="express-turso-read">0</span>/sec</p>
+            <p>Write speed: <span id="express-turso-write">0</span>/sec</p>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Express.js + Neon</h2>
+          <iframe
+            src="http://localhost:3004"
+            class="w-full h-64 border-0"
+          ></iframe>
+          <div class="mt-2">
+            <p>Read speed: <span id="express-neon-read">0</span>/sec</p>
+            <p>Write speed: <span id="express-neon-write">0</span>/sec</p>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">PHP + SQLite</h2>
+          <iframe
+            src="http://localhost:8000"
+            class="w-full h-64 border-0"
+          ></iframe>
+          <div class="mt-2">
+            <p>Read speed: <span id="php-sqlite-read">0</span>/sec</p>
+            <p>Write speed: <span id="php-sqlite-write">0</span>/sec</p>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-semibold mb-2">Node.js + SQLite</h2>
+          <iframe
+            src="http://localhost:3000"
+            class="w-full h-64 border-0"
+          ></iframe>
+          <div class="mt-2">
+            <p>Read speed: <span id="node-sqlite-read">0</span>/sec</p>
+            <p>Write speed: <span id="node-sqlite-write">0</span>/sec</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Add JavaScript to update performance metrics
+      // This would involve making API calls to each application to get the metrics
+      // and updating the respective spans
+    </script>
+  </body>
+</html>
