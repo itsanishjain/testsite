@@ -1,11 +1,9 @@
 zerops:
-  setup:
-    phpapache0:
-      build:
-        base: php@8.3
-        buildCommands:
-          - echo "nothing to do"
-      deployFiles:
-        - index.php
-      run:
-        base: php-apache@8.3
+  - setup: phpapache0
+    build:
+      base: php@8.3
+      buildCommands:
+        - echo "nothing to do"
+    deployFiles: index.php
+    run:
+      base: php-apache@8.3
