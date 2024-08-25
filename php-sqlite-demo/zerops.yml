@@ -1,9 +1,31 @@
 zerops:
   - setup: phpapache0
+    # ==== how to build your application ====
     build:
+      # what technology should the runtime
+      # container be based on, can be extended
+      # in `run.prepareCommands` using
+      # `zsc install nodejs@20`
       base: php@8.3
-      buildCommands:
+
+      # build your application
+      build:
         - echo "nothing to do"
-    deployFiles: index.php
+
+      # select which files / folders to deploy
+      # after the build succesfully finished
+      deployFiles: index.php
+
+      # *optional*: which files / folders
+      # to cache for the next use
+      cache:
+        - vendor
+        - composer.lock
+
+    # ==== how to run your application ====
     run:
+      # what technology should the runtime
+      # container be based on, can be extended
+      # in `run.prepareCommands` using
+      # `zsc install nodejs@20`
       base: php-apache@8.3
