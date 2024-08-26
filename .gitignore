@@ -34,3 +34,8 @@ npm-debug.log
 .env
 
 /node_modules
+
+database.sqlite
+database.sqlite-journal
+
+db.sqlite3
