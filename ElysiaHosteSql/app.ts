@@ -16,7 +16,7 @@ function generateRandomString(length: number): string {
     .substring(2, length + 2);
 }
 
-// Create table
+// Create table with a limit of 1000 rows
 db.run("CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT)");
 
 // Perform database operations
@@ -27,6 +27,9 @@ function performOperations() {
   const value = generateRandomString(10);
   db.run("INSERT INTO items (value) VALUES (?)", [value]);
   writeCount++;
+
+  // Limit the number of rows to 1000
+  db.run("DELETE FROM items WHERE id <= (SELECT MAX(id) - 1000 FROM items)");
 
   // Perform a read operation
   db.query("SELECT * FROM items ORDER BY RANDOM() LIMIT 1");
